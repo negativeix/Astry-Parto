@@ -471,7 +471,6 @@ class Bot(Spaceship):
         if player_in_close_range:
             self.ai_rotate_towards(self.target_player.position)
             self.ai_shoot_at(self.target_player.position)
-            print("CLOSEE", player_dist)
         else:
             if time.time() < self.roaming_until:
                 pass  # แค่เดินตรงไป
@@ -595,7 +594,7 @@ class GameManager:
         self.power_coll = {'laser': 0, 'spread': 0,'reverse' : 0, 'shield': 0}  # Track collected power-ups by type
         self.obstacle_destroy = 0  # Track destroyed asteroids and particles
         self.dash_usage = 0  # Track dash usage by the player
-
+        self.time_played=0
     @staticmethod
     def instance():
         return GameManager._instance
@@ -896,8 +895,6 @@ def main_menu():
 
     small_font = pygame.font.SysFont("comicsansms", 30)
 
-
-
     going = True
     while going:
         screen.fill((15, 15, 11))
@@ -911,9 +908,9 @@ def main_menu():
         title_image = pygame.transform.scale(title_image,
                                              (new_width, new_height))
 
-        # คำนวณตำแหน่งให้อยู่กลางหน้าจอแนวแกน X และขยับขึ้นด้านบน (เช่น Y = 120)
+        # คำนวณตำแหน่งให้อยู่กลางหน้าจอแนวแกน X และขยับขึ้นด้านบน (เช่น Y = 0)
         x = (1024 - new_width) // 2
-        y = 0  # เลื่อนขึ้น (ค่าต่ำลงไปบน)
+        y = 0
 
         # วาดภาพหัวข้อ
         screen.blit(title_image, (x, y))
@@ -923,7 +920,14 @@ def main_menu():
         quit_text = small_font.render("Press Q to Quit", True, (255, 255, 255))
 
         screen.blit(play_text, ((1024 - play_text.get_width()) // 2, 450))
-        screen.blit(quit_text, ((1024 - quit_text.get_width()) // 2, 550))
+        screen.blit(quit_text, ((1024 - quit_text.get_width()) // 2, 500))
+
+        # คำแนะนำการเล่น
+        howto1 = small_font.render("Press A to Rotate  |  Double Tap A to Dash", True, (200, 200, 200))
+        howto2 = small_font.render("Press D to Shoot  (Max 3 bullets, 1s cooldown)", True, (200, 200, 200))
+
+        screen.blit(howto1, ((1024 - howto1.get_width()) // 2, 600))
+        screen.blit(howto2, ((1024 - howto2.get_width()) // 2, 640))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -940,6 +944,7 @@ def main_menu():
         clock.tick(60)
 
     main()  # ไปที่เกมจริง
+
 
 
 # ------------------- เริ่มเกม -------------------
