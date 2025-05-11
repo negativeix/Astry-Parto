@@ -53,7 +53,7 @@ Destroying orange asteroids <img src="assets/asteroid.png" alt="Laser" width="15
 
 
 ## UML diagram
-<img src="./UML%20Class.png" alt="UML Class Diagram">
+<img src="./UML%20class.png" alt="UML Class Diagram">
 ## 🔗 Other Sources
 
 - 🎥 **Gameplay Demo / Tutorial** (YouTube):  
