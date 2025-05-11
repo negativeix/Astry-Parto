@@ -102,26 +102,7 @@ Power-up Frequency
  Use a bar chart to show the frequency of each power-up collected.
 
 
-4. Project Timeline
-
-Week Task
-1 (10 March)
-Proposal submission / Project initiation
-2 (17 March)
-3 (24 March)
-Full proposal summit
-4 (31 March)
-Finish the base code of all features
-5 (7 April)
-Implement data tracking system 
-6 (14 April)
-Submission week (Draft)
-
-
-
-5. Document version\
-Version: 5.0\
-Date: 11 May 2025
+Youtube URL:https://youtu.be/9WL7NZx5jIY?si=o-UqgXuKdaKqIRS-
 
 
    
