@@ -53,7 +53,7 @@ Destroying orange asteroids <img src="assets/asteroid.png" alt="Laser" width="15
 
 
 ## UML diagram
-![UML](UML class.png)
+<img src="UML Class.png">
 
 ## 🔗 Other Sources
 
