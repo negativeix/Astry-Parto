@@ -2,7 +2,11 @@ import pygame
 import math
 import time
 import random
-
+from SmokeParticle import SmokeParticle
+from Asteroid import  Asteroid
+from AsteroidParticle import AsteroidParticle
+from Bullet import Bullet,Laser
+from PowerUp import PowerUp
 
 import csv
 import os
@@ -30,163 +34,6 @@ def save_game_data_to_csv(game_manager):
         writer.writerow(data)
 
     print(f"Game data saved to {filename}")
-
-
-
-
-# ========== PowerUp Class ==========
-class PowerUp:
-    images = {
-        'spread': pygame.image.load('assets/spread.png'),
-        'laser': pygame.image.load('assets/laser.png'),
-        'reverse': pygame.image.load('assets/reverse.png'),
-        'shield': pygame.image.load('assets/shield.png')
-    }
-
-    def __init__(self, position, power_type):
-        self.position = list(position)
-        self.type = power_type
-        self.image = pygame.transform.scale(
-            self.images.get(self.type, self.images['spread']), (50, 50))
-        self.rect = self.image.get_rect(topleft=self.position)
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
-
-
-# ========== Bullet Classes ==========
-class Bullet:
-    def __init__(self, position, direction):
-        self.position = list(position)
-        self.direction = direction
-        self.speed = 5
-        self.size = (6, 6)
-        self.rect = pygame.Rect(self.position[0], self.position[1], *self.size)
-
-    def move(self):
-        rad = math.radians(self.direction)
-        self.position[0] += self.speed * math.cos(rad)
-        self.position[1] += self.speed * math.sin(rad)
-        self.rect.topleft = self.position
-
-    def check_collision(self, other_rect):
-        return self.rect.colliderect(other_rect)
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)
-
-
-class Laser(Bullet):
-    def __init__(self, position, direction):
-        super().__init__(position, direction)
-        self.speed = 12
-        self.color = (255, 0, 0)
-
-    def draw(self, screen):
-        end_x = self.position[0] + 2000 * math.cos(
-            math.radians(self.direction))
-        end_y = self.position[1] + 2000 * math.sin(
-            math.radians(self.direction))
-        pygame.draw.line(screen, self.color, self.position, (end_x, end_y), 4)
-
-
-# ========== Asteroid Class ==========
-class Asteroid:
-    def __init__(self, position):
-        self.position = list(position)
-        self.image = pygame.image.load("assets/asteroid.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (60, 60))
-        self.rect = self.image.get_rect(center=self.position)
-        self.contains_powerup = random.choice(
-            ['spread', 'laser', 'reverse', 'shield', None
-             ])  # 40% chance for powerup
-
-    def draw(self, screen):
-        screen.blit(self.image, self.rect.topleft)
-
-    def check_collision(self, other_rect):
-        return self.rect.colliderect(other_rect)
-
-
-class AsteroidParticle:
-
-    def __init__(self):
-        # Spawn at the edge with a small random direction toward center
-        margin = 50
-        WIDTH = 1024
-        HEIGHT = 769
-        side = random.choice(['top', 'bottom', 'left', 'right'])
-        if side == 'top':
-            self.x = random.uniform(0, WIDTH)
-            self.y = -margin
-        elif side == 'bottom':
-            self.x = random.uniform(0, WIDTH)
-            self.y = HEIGHT + margin
-        elif side == 'left':
-            self.x = -margin
-            self.y = random.uniform(0, HEIGHT)
-        else:  # right
-            self.x = WIDTH + margin
-            self.y = random.uniform(0, HEIGHT)
-
-        # Velocity toward center with slight randomness
-        angle = math.atan2(HEIGHT / 2 - self.y,
-                           WIDTH / 2 - self.x) + random.uniform(-0.5, 0.5)
-        speed = random.uniform(0.5, 1.5)
-        self.vx = math.cos(angle) * speed
-        self.vy = math.sin(angle) * speed
-
-        # Random size and rotation
-        self.size = random.randint(5, 12)
-        self.color = (137, 137, 137)
-
-    def update(self):
-        self.x += self.vx
-        self.y += self.vy
-
-    def draw(self, surface):
-        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)),
-                           self.size)
-
-    def rect(self):
-        return pygame.Rect(self.x - self.size, self.y - self.size,
-                           self.size * 2, self.size * 2)
-
-
-class SmokeParticle:
-    def __init__(self, position, radius=None, color=None):
-        self.position = list(position)
-        self.radius = radius if radius is not None else random.randint(6, 10)
-        self.alpha = 255
-        self.lifetime = 0.4
-        self.creation_time = time.time()
-
-        self.surface = pygame.Surface((self.radius * 2, self.radius * 2),
-                                      pygame.SRCALPHA)
-        self.color = color if color else random.choice([
-            (255, 80, 0),  # ส้มแดง
-            (255, 120, 40),  # ส้มอ่อน
-            (255, 0, 0)  # แดงสด
-        ])
-
-    def update(self):
-        elapsed = time.time() - self.creation_time
-        if elapsed > self.lifetime:
-            return False
-
-        self.alpha = max(0, 255 - int((elapsed / self.lifetime) * 255))
-        self.surface.fill((0, 0, 0, 0))  # เคลียร์พื้นหลังโปร่งใส
-
-        # วาดวงกลมไอพ่น
-        faded_color = (*self.color, self.alpha)
-        pygame.draw.circle(self.surface, faded_color,
-                           (self.radius, self.radius), self.radius)
-        return True
-
-    def draw(self, screen):
-        screen.blit(self.surface, (
-        self.position[0] - self.radius, self.position[1] - self.radius))
-
 
 # ========== Spaceship and Bot Classes ==========
 class Spaceship:
@@ -265,7 +112,7 @@ class Spaceship:
 
         collided = False
 
-        # ตรวจสอบชนกับ asteroids
+        # collide asteroids
         for asteroid in GameManager.instance().asteroids:
             if new_rect.colliderect(asteroid.rect):
                 self.direction = (self.direction + 180) % 360
@@ -274,7 +121,7 @@ class Spaceship:
                 GameManager.instance().obstacle_destroy += 1
                 break
 
-        # ตรวจสอบชนกับ bots (รวมผู้เล่นกับบอทอื่น)
+        # collide bots
         if not collided:
             for other in GameManager.instance().players + GameManager.instance().bots:
                 if other != self and new_rect.colliderect(other.rect):
@@ -283,7 +130,7 @@ class Spaceship:
                     collided = True
                     break
 
-        # ถ้าไม่มีการชน: อัปเดตตำแหน่งตามปกติ
+        # not chon
         if not collided:
             self.position = new_position
             self.position[0] = max(20,
@@ -380,25 +227,22 @@ class Spaceship:
             pygame.draw.circle(screen, color, (int(orb_x), int(orb_y)), 5)
 
     def is_direction_valid(self, new_direction):
-        # Check if rotating in that direction will push the bot outside the screen bounds
         rad = math.radians(new_direction)
         dx = math.cos(rad)
         dy = math.sin(rad)
 
         projected_x = self.position[
-                          0] + dx * 40  # Assume 40 pixels width of the bot
+                          0] + dx * 40
         projected_y = self.position[
-                          1] + dy * 40  # Assume 40 pixels height of the bot
+                          1] + dy * 40
 
-        # Check if the new position is inside the screen bounds
         return 20 <= projected_x <= 1024 - 20 and 20 <= projected_y <= 768 - 20
 
     def rotate_continuously(self):
-        # Make the bot rotate continuously in random direction if it hits the border
         self.direction += random.choice(
             [-self.rotation_step, self.rotation_step])
         if not self.is_direction_valid(self.direction):
-            self.direction = (self.direction + 180) % 360  # Reverse if invalid
+            self.direction = (self.direction + 180) % 360  # reverse di
 
 
 class Bot(Spaceship):
@@ -495,7 +339,7 @@ class Bot(Spaceship):
             return
 
         self.direction = (
-                                     self.direction + self.rotation_direction * self.rotation_step) % 360
+          self.direction + self.rotation_direction * self.rotation_step) % 360
 
         remaining = (self.target_direction - self.direction + 360) % 360
         if remaining < self.rotation_step or remaining > (
@@ -531,7 +375,7 @@ class Bot(Spaceship):
                     collided = True
                     break
 
-        # ถ้าไม่ชนอะไรเลย → อัปเดตตำแหน่ง
+        # ถ้าไม่ชนอะไรเลย -> อัปเดตตำแหน่ง
         if not collided:
             self.position = new_pos
             self.position[0] = max(20, min(self.position[0], w - 20))
@@ -562,10 +406,7 @@ class Bot(Spaceship):
         self.shoot()
         self.last_shot_time = time.time()
 
-
 # ========== GameManager Class ==========
-
-
 class GameManager:
     _instance = None
 
@@ -793,15 +634,11 @@ class GameManager:
         for particle in self.smoke_particles:
             particle.draw(screen)
 
-
-
 # ========== Main Game Loop ==========
-
-# ------------------- เกมหลัก -------------------
 def main():
     pygame.init()
     screen = pygame.display.set_mode((1024, 768))
-    pygame.display.set_caption("Astro Party")
+    pygame.display.set_caption("Astry Parto")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 48)
 
@@ -847,7 +684,6 @@ def main():
 
         game_manager.update()
 
-        # ตรวจสอบสถานะจบเกม (ไม่ใช้ .alive แล้ว)
         print(len(game_manager.players), len(game_manager.bots))
         if not game_manager.game_over:
             if len(game_manager.players) == 0:
@@ -871,7 +707,6 @@ def main():
             screen.blit(restart_text, (
             screen.get_width() // 2 - restart_text.get_width() // 2, 360))
 
-            # Print the stats to the console
             print("Game Over! Here are the stats:")
             print(f"Player Hit: {game_manager.player_hit}")
             print(f"Player Total Bullets Fired: {game_manager.total_shoot}")
@@ -887,7 +722,6 @@ def main():
     pygame.quit()
 
 
-# ------------------- เมนูหลัก -------------------
 def main_menu():
     pygame.init()
     screen = pygame.display.set_mode((1024, 768))
@@ -901,28 +735,23 @@ def main_menu():
 
         title_image = pygame.image.load("assets/title.png").convert_alpha()
 
-        # ปรับขนาดภาพ (เช่น ย่อเหลือ 70%)
         scale_factor = 0.5
         new_width = int(title_image.get_width() * scale_factor)
         new_height = int(title_image.get_height() * scale_factor)
         title_image = pygame.transform.scale(title_image,
                                              (new_width, new_height))
 
-        # คำนวณตำแหน่งให้อยู่กลางหน้าจอแนวแกน X และขยับขึ้นด้านบน (เช่น Y = 0)
         x = (1024 - new_width) // 2
         y = 0
 
-        # วาดภาพหัวข้อ
         screen.blit(title_image, (x, y))
 
-        # ตัวเลือก
         play_text = small_font.render("Press P to Play", True, (255, 255, 255))
         quit_text = small_font.render("Press Q to Quit", True, (255, 255, 255))
 
         screen.blit(play_text, ((1024 - play_text.get_width()) // 2, 450))
         screen.blit(quit_text, ((1024 - quit_text.get_width()) // 2, 500))
 
-        # คำแนะนำการเล่น
         howto1 = small_font.render("Press A to Rotate  |  Double Tap A to Dash", True, (200, 200, 200))
         howto2 = small_font.render("Press D to Shoot  (Max 3 bullets, 1s cooldown)", True, (200, 200, 200))
 
@@ -943,11 +772,10 @@ def main_menu():
         pygame.display.flip()
         clock.tick(60)
 
-    main()  # ไปที่เกมจริง
+    main()
 
 
 
-# ------------------- เริ่มเกม -------------------
 if __name__ == "__main__":
     main_menu()
 

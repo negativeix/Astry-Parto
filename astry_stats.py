@@ -6,12 +6,15 @@ import pandas as pd
 import numpy as np
 import ast
 
-# === โหลดข้อมูล CSV ===
+
 df = pd.read_csv("game_data.csv")
-df.rename(columns={"Power-ups Collected": "Power-ups"}, inplace=True)
 df['Accuracy'] = df['Player Hit'] / df['Total Bullets Fired']
 
-# === ฟังก์ชันวาดกราฟ ===
+
+if 'Power-ups Collected' in df.columns:
+    df['Power-ups'] = df['Power-ups Collected'].apply(ast.literal_eval)
+
+
 def draw_graph(option):
     fig.clear()
     ax = fig.add_subplot(111)
@@ -29,105 +32,106 @@ def draw_graph(option):
         ax.set_ylabel("Accuracy")
 
     elif option == "Power-up Frequency":
-        if 'Power-ups' not in df.columns:
-            ax.text(0.5, 0.5, "No 'Power-ups' column found", ha='center', va='center')
-        else:
-            try:
-                power_lists = df['Power-ups'].dropna().apply(ast.literal_eval)
-                total_counts = {}
-                for d in power_lists:
-                    for k, v in d.items():
-                        total_counts[k] = total_counts.get(k, 0) + v
-                num_rows = len(power_lists)
-                avg_counts = {k: v / num_rows for k, v in total_counts.items()}
+        try:
+            power_lists = df['Power-ups'].dropna()
+            total_counts = {'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}
+            for d in power_lists:
+                for k, v in d.items():
+                    total_counts[k] = total_counts.get(k, 0) + v
 
-                color_map = {
-                    'laser': 'red',
-                    'spread': 'green',
-                    'reverse': 'gray',
-                    'shield': 'skyblue'
-                }
-                colors = [color_map.get(k, 'black') for k in avg_counts.keys()]
+            num_rows = len(power_lists)
+            avg_counts = {k: v / num_rows for k, v in total_counts.items()}
 
-                ax.bar(avg_counts.keys(), avg_counts.values(), color=colors)
-                ax.set_title("Average Power-ups Collected per Type")
-                ax.set_ylabel("Average Collected")
-            except Exception as e:
-                ax.text(0.5, 0.5, f"Error reading power-ups:\n{e}", ha='center', va='center')
+            colors = {
+                'laser': 'red',
+                'spread': 'green',
+                'reverse': 'gray',
+                'shield': 'skyblue'
+            }
+            ax.bar(avg_counts.keys(), avg_counts.values(), color=[colors[k] for k in avg_counts.keys()])
+            ax.set_title("Average Power-ups Collected per Type")
+            ax.set_ylabel("Average Collected")
+
+        except Exception as e:
+            ax.text(0.5, 0.5, f"Error reading power-ups:\n{e}", ha='center', va='center')
 
     canvas.draw()
 
-# === ฟังก์ชันคำนวณค่าสถิติ ===
 def draw_stats(option):
-    output.delete(1.0, tk.END)  # ล้างข้อความเก่า
+    for i in stats_table.get_children():
+        stats_table.delete(i)
 
     if option == "Accuracy":
         mean = df['Accuracy'].mean()
         std = df['Accuracy'].std()
-        output.insert(tk.END, f"Accuracy\nMean: {mean:.3f}\nStandard Deviation: {std:.3f}")
+        stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
+        stats_table.insert('', 'end', values=("Standard Deviation", f"{std:.3f}"))
 
     elif option == "Time Played":
         mean = df['Time Played'].mean()
-        output.insert(tk.END, f"Time Played\nMean: {mean:.3f} sec")
+        stats_table.insert('', 'end', values=("Mean", f"{mean:.3f} sec"))
 
     elif option == "Bullets Fired":
         total = df['Total Bullets Fired'].sum()
         mean = df['Total Bullets Fired'].mean()
-        output.insert(tk.END, f"Bullets Fired\nTotal: {total}\nMean: {mean:.3f}")
+        stats_table.insert('', 'end', values=("Total", f"{total}"))
+        stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
 
     elif option == "Obstacle Destroyed":
         total = df['Obstacles Destroyed'].sum()
         mean = df['Obstacles Destroyed'].mean()
-        output.insert(tk.END, f"Obstacles Destroyed\nTotal: {total}\nMean: {mean:.3f}")
+        stats_table.insert('', 'end', values=("Total", f"{total}"))
+        stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
 
     elif option == "Dash Usage":
         mean = df['Dash Usage'].mean()
         perc90 = np.percentile(df['Dash Usage'], 90)
-        output.insert(tk.END, f"Dash Usage\nMean: {mean:.3f}\n90th Percentile: {perc90:.3f}")
+        stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
+        stats_table.insert('', 'end', values=("90th Percentile", f"{perc90:.3f}"))
 
-# === GUI Layout ===
 root = tk.Tk()
 root.title("Game Analytics Dashboard")
 
-main_frame = tk.Frame(root)
+main_frame = ttk.Frame(root)
 main_frame.pack(padx=10, pady=10)
 
-# ซ้าย: กราฟ
-left_frame = tk.Frame(main_frame)
+left_frame = ttk.Frame(main_frame)
 left_frame.grid(row=0, column=0, padx=10)
 
-fig = plt.Figure(figsize=(7, 5), dpi=100)
+fig = plt.Figure(figsize=(6, 5), dpi=100)
 canvas = FigureCanvasTkAgg(fig, master=left_frame)
 canvas.get_tk_widget().pack()
 
 graph_options = ["Dash vs Time Played", "Bullet Fired vs Accuracy", "Power-up Frequency"]
-graph_var = tk.StringVar()
-graph_var.set(graph_options[0])
+var_graph = tk.StringVar()
+var_graph.set(graph_options[0])
 
-dropdown_graph = ttk.Combobox(left_frame, textvariable=graph_var, values=graph_options, state="readonly")
+dropdown_graph = ttk.Combobox(left_frame, textvariable=var_graph, values=graph_options, state="readonly")
 dropdown_graph.pack(pady=5)
 
-btn_graph = ttk.Button(left_frame, text="Show Graph", command=lambda: draw_graph(graph_var.get()))
-btn_graph.pack(pady=5)
+graph_btn = ttk.Button(left_frame, text="Show Graph", command=lambda: draw_graph(var_graph.get()))
+graph_btn.pack()
 
-# ขวา: สถิติ
-right_frame = tk.Frame(main_frame)
-right_frame.grid(row=0, column=1, padx=10, sticky='n')
+right_frame = ttk.Frame(main_frame)
+right_frame.grid(row=0, column=1, padx=10)
 
 stat_options = ["Accuracy", "Time Played", "Bullets Fired", "Obstacle Destroyed", "Dash Usage"]
-stat_var = tk.StringVar()
-stat_var.set(stat_options[0])
+var_stat = tk.StringVar()
+var_stat.set(stat_options[0])
 
-dropdown_stat = ttk.Combobox(right_frame, textvariable=stat_var, values=stat_options, state="readonly")
+dropdown_stat = ttk.Combobox(right_frame, textvariable=var_stat, values=stat_options, state="readonly")
 dropdown_stat.pack(pady=5)
 
-btn_stat = ttk.Button(right_frame, text="Show Stats", command=lambda: draw_stats(stat_var.get()))
-btn_stat.pack(pady=5)
+stat_btn = ttk.Button(right_frame, text="Show Stats", command=lambda: draw_stats(var_stat.get()))
+stat_btn.pack(pady=5)
 
-output = tk.Text(right_frame, height=10, width=35)
-output.pack()
+stats_table = ttk.Treeview(right_frame, columns=("Metric", "Value"), show="headings", height=6)
+stats_table.heading("Metric", text="Metric")
+stats_table.heading("Value", text="Value")
+stats_table.column("Metric", width=150, anchor="center")
+stats_table.column("Value", width=120, anchor="center")
+stats_table.pack(pady=5)
 
-# เริ่มต้น
 draw_graph(graph_options[0])
 draw_stats(stat_options[0])
 
