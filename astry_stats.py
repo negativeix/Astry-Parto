@@ -64,30 +64,41 @@ def draw_stats(option):
     if option == "Accuracy":
         mean = df['Accuracy'].mean()
         std = df['Accuracy'].std()
+        max_value = df['Accuracy'].max()
         stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
         stats_table.insert('', 'end', values=("Standard Deviation", f"{std:.3f}"))
+        stats_table.insert('', 'end', values=("Max", f"{max_value:.3f}"))
 
     elif option == "Time Played":
         mean = df['Time Played'].mean()
+        max_value = df['Time Played'].max()
         stats_table.insert('', 'end', values=("Mean", f"{mean:.3f} sec"))
+        stats_table.insert('', 'end', values=("Max", f"{max_value:.3f} sec"))
 
     elif option == "Bullets Fired":
         total = df['Total Bullets Fired'].sum()
         mean = df['Total Bullets Fired'].mean()
+        max_value = df['Total Bullets Fired'].max()
         stats_table.insert('', 'end', values=("Total", f"{total}"))
         stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
+        stats_table.insert('', 'end', values=("Max", f"{max_value}"))
 
     elif option == "Obstacle Destroyed":
         total = df['Obstacles Destroyed'].sum()
         mean = df['Obstacles Destroyed'].mean()
+        max_value = df['Obstacles Destroyed'].max()
         stats_table.insert('', 'end', values=("Total", f"{total}"))
         stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
+        stats_table.insert('', 'end', values=("Max", f"{max_value}"))
 
     elif option == "Dash Usage":
         mean = df['Dash Usage'].mean()
         perc90 = np.percentile(df['Dash Usage'], 90)
+        max_value = df['Dash Usage'].max()
         stats_table.insert('', 'end', values=("Mean", f"{mean:.3f}"))
         stats_table.insert('', 'end', values=("90th Percentile", f"{perc90:.3f}"))
+        stats_table.insert('', 'end', values=("Max", f"{max_value:.3f}"))
+
 
 root = tk.Tk()
 root.title("Game Analytics Dashboard")

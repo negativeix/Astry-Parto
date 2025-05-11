@@ -55,3 +55,11 @@ Player Hit,Total Bullets Fired,Power-ups Collected,Obstacles Destroyed,Dash Usag
 6,14,"{'laser': 0, 'spread': 1, 'reverse': 1, 'shield': 0}",3,5,13.786485433578491
 6,16,"{'laser': 1, 'spread': 0, 'reverse': 0, 'shield': 1}",5,5,20.122668743133545
 0,2,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",1,4,0
+3,27,"{'laser': 1, 'spread': 0, 'reverse': 0, 'shield': 1}",9,12,27.747883319854736
+0,0,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",0,0,0
+0,0,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",0,0,0
+6,9,"{'laser': 2, 'spread': 0, 'reverse': 0, 'shield': 4}",12,7,0
+4,7,"{'laser': 0, 'spread': 1, 'reverse': 0, 'shield': 0}",5,5,0
+1,7,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",6,7,29.937740325927734
+0,0,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",0,1,0
+0,0,"{'laser': 0, 'spread': 0, 'reverse': 0, 'shield': 0}",1,1,0
