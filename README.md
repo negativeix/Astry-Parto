@@ -16,7 +16,7 @@ Before you run the game, make sure you have:
 1. **Clone the repository** (or download the project folder):
    ```bash
    git clone https://github.com/negativeix/Astry-Parto.git
-   cd astro-party 
+   cd Astry-Parto
 2. **Set up env**
    ```bash
    python -m pip install -r requirements.txt
